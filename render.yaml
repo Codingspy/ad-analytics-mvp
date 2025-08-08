@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: ad-analytics-frontend
+    env: docker
+    plan: free
+    dockerContext: ./frontend
+    dockerfilePath: ./frontend/Dockerfile
+    autoDeploy: true
+
+  - type: web
+    name: ad-analytics-backend
+    env: docker
+    plan: free
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    autoDeploy: true
