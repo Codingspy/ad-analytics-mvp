@@ -14,7 +14,7 @@ const message = ref('')
 
 const sendEvent = async () => {
   try {
-    const res = await axios.post('http://localhost:5000/event', {
+    const res = await axios.post('https://ad-analytics-backend.onrender.com', {
       type: 'click',
       metadata: {
         adId: 'abc123',
