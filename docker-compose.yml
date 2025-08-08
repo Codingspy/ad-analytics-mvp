@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
 version: '3.8'
 
 services:
@@ -7,8 +8,10 @@ services:
       - "5000:5000"
     environment:
       - MONGO_URI=mongodb://mongo:27017/ad_analytics
+      - ELASTICSEARCH_URI=http://elasticsearch:9200
     depends_on:
       - mongo
+      - elasticsearch
 
   frontend:
     build: ./frontend
@@ -21,6 +24,40 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      
+    ports:
+      - "9200:9200"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.0
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - XPACK_SECURITY_ENABLED=false
+  
+  logstash:
+    image: logstash:8.13.0
+    build: ./logstash
+    depends_on:
+      - mongo
+      - elasticsearch
+    volumes:
+      - ./logstash/pipeline.conf:/usr/share/logstash/pipeline/logstash.conf
+    ports:
+      - "5044:5044"
+    command: logstash -f /usr/share/logstash/pipeline/logstash.conf
+
 
 volumes:
   mongo_data:
